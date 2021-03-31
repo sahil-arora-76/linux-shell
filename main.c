@@ -2,10 +2,15 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
+#include <unistd.h>
 
 void print_prompt1(void)
 {
-    fprintf(stderr, "$ ");
+    char hostname[100];
+    gethostname(hostname, sizeof(hostname)); 
+    char name[300]; 
+    getlogin_r(name, 300); 
+    printf("%s@%s%c ", name, hostname, '$'); 
 }
 
 void print_prompt2(void)
@@ -52,18 +57,10 @@ char *read_cmd()
 }
 
 
-void display()
-{
-    system("clear"); 
-    printf("\n\n\n\n\n"); 
-    printf("%s\n", "\t\t###########################################################"); 
-    printf("%s\n", "\t\t\t\t\tMY TERMINAL "); 
-    printf("%s\n", "\t\t###########################################################"); 
-}
 
 int main(int argc, char **argv)
 {
-    display(); 
+    system("clear");
     char *cmd;
 
     do
