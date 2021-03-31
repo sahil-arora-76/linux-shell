@@ -22,15 +22,22 @@ char *read_cmd()
     int length = 0;  
     while (1)
     {
-        if (ch == '\n')
-        {
-            break;
-        }
-
-
         ch = getchar();
         temp[length] = ch;
         length++;
+
+        if (ch == '\n' )
+        {
+            if (temp[length - 2] == '\\') 
+            {
+                print_prompt2();
+                continue;
+            } else 
+            {
+                break;
+            }
+        }
+
     }
     temp[length] = '\0';
     str = malloc(sizeof(char) * length);

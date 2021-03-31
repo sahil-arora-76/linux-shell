@@ -11,3 +11,4 @@ custom command
 ```
     exit - for exit
 ```            
+for multiline string use \
