@@ -10,5 +10,6 @@ a simple to use linux terminal
 custom command 
 ```
     exit - for exit
+    cd - for changing dir
 ```            
 for multiline string use \

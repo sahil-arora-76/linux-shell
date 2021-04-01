@@ -1,10 +1,11 @@
-#include <stdio.h>
+#include <stdio.h> 
 #include <stdlib.h>
-#include <errno.h>
-#include <string.h>
 #include <unistd.h>
+#include <string.h>
+#include <sys/wait.h>
+#define BUFFERSIZE 1024
 
-void print_prompt1(void)
+void get_info(void)
 {
     char hostname[100];
     gethostname(hostname, sizeof(hostname)); 
@@ -13,82 +14,137 @@ void print_prompt1(void)
     printf("%s@%s%c ", name, hostname, '$'); 
 }
 
-void print_prompt2(void)
+int built_cd(char **args) 
 {
-    fprintf(stderr, "> ");
+    if (!args[0]) 
+    {
+        fprintf(stderr, "expected argument\n");
+    }
+    if (chdir(args[1]) == -1 ) 
+    {
+        fprintf(stderr, "no directory found\n"); 
+        return -1;
+    }
+    return 1;
+}
+
+int built_exit() 
+{
+    exit(0);
+}
+
+char *read_line(void) 
+{
+    int pos = 0; 
+    char ch;
+    char *buffer = malloc(sizeof(char) * BUFFERSIZE); 
+    while(ch != EOF && ch != '\n') 
+    {
+        ch = getchar(); 
+        buffer[pos] = ch;
+        pos++; 
+    }
+    buffer[pos + 1] = '\0';
+
+    //TODO -> excedded the buffer reallocate
+    return buffer;
 }
 
 
-char *read_cmd() 
+int process_exec(char **args) 
 {
-    char *str;
-    char ch = 'p';
-    char temp[1024]; 
-    int length = 0;  
-    while (1)
+    pid_t pid, wpid; 
+    int status; 
+    pid = fork(); 
+    if (pid == 0)
     {
-        ch = getchar();
-        temp[length] = ch;
-        length++;
-
-        if (ch == '\n' )
+        int k = execvp(args[0], args); 
+        if (k == -1) 
         {
-            if (temp[length - 2] == '\\') 
-            {
-                print_prompt2();
-                continue;
-            } else 
-            {
-                break;
+            fprintf(stderr, "no such command found\n"); 
+        }
+    } else if (pid < 0)
+    {
+        fprintf(stderr, "child process erorr\n");
+    } else 
+    {
+        wait(NULL); 
+    }
+    return 1;
+}
+
+int exec(char **arr)
+{
+    const char *built = "cd";  
+    const char *built_e = "exit"; 
+    int i; 
+    if (!arr[0]) 
+    {
+        return 1;
+    }
+    if (strcmp(arr[0], built) == 0) 
+    {
+        return built_cd(arr); 
+    } else if (strcmp(arr[0], built_e) == 0)
+    {
+        return built_exit(); 
+    }
+
+    return process_exec(arr);
+}
+
+
+char **split(char *line) 
+{
+    int buffer = 64; 
+    char **arr = malloc(sizeof(char) * buffer); 
+    char *key; 
+    const char *delim = " \t\r\n\a"; 
+    if (!arr) 
+    {
+        fprintf(stderr, "malloc error\n"); 
+        exit(0); 
+    }
+    key = strtok(line, delim); 
+    int i = 0; 
+    while(key != NULL) 
+    {
+        arr[i] = key;
+        i++; 
+        if (i >= buffer) {
+            buffer += 64;
+            arr = realloc(arr, buffer * sizeof(char*));
+            if (!arr) {
+                fprintf(stderr, "lsh: allocation error\n");
+                exit(EXIT_FAILURE);
             }
         }
 
+        key = strtok(NULL, delim);  
     }
-    temp[length] = '\0';
-    str = malloc(sizeof(char) * length);
-    int i = 0; 
-    while(temp[i] != '\0') 
-    {
-        str[i] = temp[i];
-        i++;         
-    }
-    str[i] = '\0';
-    return str; 
+    arr[i] = NULL;
+    return arr;
 }
 
 
 
-int main(int argc, char **argv)
+
+
+int main() 
 {
-    system("clear");
-    char *cmd;
-
-    do
+    
+    char *line; 
+    char **args; 
+    int status;
+    do 
     {
-        print_prompt1();
+        get_info(); 
+        line = read_line(); 
+        args = split(line); 
+        status = exec(args); 
+    
+        free(line); 
+        free(args);
+    } while(status);
 
-        cmd = read_cmd();
-
-        if(!cmd)
-        {
-            exit(EXIT_SUCCESS);
-        }
-
-        if(cmd[0] == '\0' || strcmp(cmd, "\n") == 0)
-        {
-            free(cmd);
-            continue;
-        }
-
-        if(strcmp(cmd, "exit\n") == 0)
-        {
-            free(cmd);
-            break;
-        }
-        system(cmd);
-        
-        free(cmd);
-        } while(1);
-
-    return 0;
 }

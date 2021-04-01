@@ -1,4 +1,4 @@
 
 
 main.o: main.c
-	gcc main.c -o strt
+	gcc main.c -o main.o
