@@ -1,4 +1,12 @@
+FLAGS=-Wall
 
+COMPILER=gcc
 
-main.o: main.c
-	gcc main.c -o main.o
+OBJ=terminal.o
+
+FILES=main.c
+
+build/$(OBJ): src/$(FILES)
+	$(COMPILER) -o $@ $< $(FLAGS)
+clean: 
+	rm -rf build/.*o build/$(OBJ)
