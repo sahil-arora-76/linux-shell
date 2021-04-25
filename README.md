@@ -3,6 +3,7 @@ a simple to use linux terminal
 
 # USE
 ```c
+    mkdir build
     make
     cd build
     ./terminal.o
