@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/wait.h>
-#include<sys/utsname.h>
+#include <sys/utsname.h>
 #include <stdlib.h>
 #define BUFFERSIZE 100
 #define GREEN "\033[0;32m"
